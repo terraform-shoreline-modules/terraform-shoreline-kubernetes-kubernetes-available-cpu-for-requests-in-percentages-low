@@ -1,0 +1,158 @@
+{
+  "name": "kubernetes_cpu_availability_low",
+  "description": "The \"Kubernetes CPU Availability Low\" incident type refers to an incident where the available CPU for requests in a Kubernetes cluster is too low. This can cause performance issues and potential downtime for the affected service. This incident may be triggered by a monitoring system or an alert from Kubernetes itself. It is important to investigate and resolve this incident promptly to ensure the service is operating optimally.",
+  "params": [
+    {
+      "name": "CPU_THRESHOLD",
+      "value": ""
+    },
+    {
+      "name": "DEPLOYMENT",
+      "value": ""
+    },
+    {
+      "name": "POD_NAME",
+      "value": ""
+    },
+    {
+      "name": "CONTAINER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NODE_COUNT",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    },
+    {
+      "name": "NODE_INSTANCE_TYPE",
+      "value": ""
+    },
+    {
+      "name": "CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Kubernetes CPU Availability Low\nThe \"Kubernetes CPU Availability Low\" incident type refers to an incident where the available CPU for requests in a Kubernetes cluster is too low. This can cause performance issues and potential downtime for the affected service. This incident may be triggered by a monitoring system or an alert from Kubernetes itself. It is important to investigate and resolve this incident promptly to ensure the service is operating optimally."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the CPU usage of all the pods in the Kubernetes cluster"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl top pods --all-namespaces`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the CPU usage of all the nodes in the Kubernetes cluster"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl top nodes`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the CPU limits and requests of the pods in the Kubernetes cluster"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl describe pods --all-namespaces | grep -E 'Limits|Requests'`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the CPU usage of the containers in a specific pod"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "container | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE | name=$$CONTAINER_NAME | `top -n 1 -b | grep -E 'CPU'`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the Kubernetes events to see if there are any relevant error messages"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl get events --sort-by=.metadata.creationTimestamp`"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Resource limits were not set properly in containers, leading to overconsumption of CPU resources."
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | random=1 | limit=1 | invoke_get_pod_cpu_usage($DEPLOYMENT, $NAMESPACE)"
+    },
+    {
+      "name": "cell_14",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Inadequate resource allocation by the Kubernetes cluster, leading to insufficient CPU resources being available."
+    },
+    {
+      "name": "cell_15",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | random=1 | limit=1 | invoke_cpu_usage_check($CPU_THRESHOLD, $DEPLOYMENT, $NAMESPACE)"
+    },
+    {
+      "name": "cell_16",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Increase the resources allocated to the Kubernetes cluster to avoid CPU contention."
+    },
+    {
+      "name": "cell_17",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | random=1 | limit=1 | invoke_update_nodegroup($NODE_COUNT, $NODE_INSTANCE_TYPE, $CLUSTER_NAME)"
+    },
+    {
+      "name": "cell_18",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Identify and terminate idle or unused containers to free up resources."
+    },
+    {
+      "name": "cell_19",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | random=1 | limit=1 | invoke_pods_cpu_threshold_remediation($DEPLOYMENT, $NAMESPACE)"
+    }
+  ]
+}
